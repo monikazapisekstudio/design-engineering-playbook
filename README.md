@@ -20,3 +20,7 @@ The goal is to help senior designers:
 This is an early local draft.
 
 The full vision is broader than the first version. The playbook will grow over time from real project work, tested workflows, and reusable patterns extracted from practice.
+
+## History
+
+* **2026-06-06** — Added `socratic-dialog` skill (v2.3) to `skills/`. The skill enforces reasoning rigor via a 5-step Socratic workflow, with anti-bias, anti-sycophancy, and Cognitive Immune System framing. Licensed under MIT.
