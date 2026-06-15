@@ -30,4 +30,5 @@ I work across product design, UX strategy, design systems, designOps, AI-assiste
 
 ## History
 
+* **2026-06-15** — Added kano-model-strategist skill (v1.1.0) to skills/. The skill classifies features into Kano categories (Must-be / Performance / Attractive / Indifferent / Reverse / Questionable) and prunes the backlog to prevent Experience Rot. v1.1 adds T-shirt sizing rubric, CEO pushback scripts (4 patterns), and a market-access vs. user-facing feature distinction. Includes EVIDENCE.md (5-point Path B eval). Licensed under MIT.
 * **2026-06-06** — Added socratic-dialog skill (v2.3) to skills/. The skill enforces reasoning rigor via a 5-step Socratic workflow, with anti-bias, anti-sycophancy, and Cognitive Immune System framing. Licensed under MIT.
