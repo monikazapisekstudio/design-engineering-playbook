@@ -2,6 +2,22 @@
 
 AI-assisted workflow artefacts for product designers working in agile and lean environments. Agents, skills, and design engineering tools built for AI-native workflows across the full product lifecycle.
 
+## Installation
+
+**Claude Code / Codex CLI / Cursor** — install all skills and agents with one command:
+
+```bash
+npx skills add monikazapisekstudio/design-engineering-playbook
+```
+
+**GitHub Copilot** — available via [awesome-copilot](https://github.com/github/awesome-copilot):
+- [Agent Agile Master](https://github.com/github/awesome-copilot/pull/2051) (PR pending)
+- [Kano Model Strategist + Socratic Dialog](https://github.com/github/awesome-copilot/pull/2053) (PR pending)
+
+**Manual install** — copy any `SKILL.md` or `AGENT.md` file into your project and reference it in your agent config.
+
+---
+
 ## Vision
 
 The goal is to help senior designers:
