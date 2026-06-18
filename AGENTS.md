@@ -18,3 +18,12 @@ When working in this repo:
 Do not add private project data, client data, secrets, or personal notes.
 
 Prefer practical, reusable, senior-level material over generic AI advice.
+
+## Available agents
+
+- `agents/agent-agile-master/AGENT.md` — Agile master for solo practitioners. Routes to 25+ rituals: sprint planning, retrospective, estimation, story mapping, OKR, team health, change management. Load with PERSONA.md.
+
+## Available skills
+
+- `skills/kano-model-strategist/SKILL.md` — Feature prioritization using Kano model. Cut waste, build MDP over MVP.
+- `skills/socratic-dialog/SKILL.md` — Reasoning rigor and anti-sycophancy guard for high-stakes decisions.

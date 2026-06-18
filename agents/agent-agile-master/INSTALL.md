@@ -83,6 +83,52 @@ the start of the session:
 
 Claude will read the files directly from your folder. No copying needed.
 
+## Option E — OpenAI Codex CLI
+
+Codex CLI automatically reads `AGENTS.md` from the repo root, so it gets
+repo context without any setup. Load the full agent by telling Codex which
+files to read.
+
+### Step 1: Clone or download the repo
+
+```bash
+git clone https://github.com/monikazapisekstudio/design-engineering-playbook
+cd design-engineering-playbook
+```
+
+### Step 2: Run Codex from the repo root
+
+Codex reads `AGENTS.md` automatically. To load the full agent:
+
+```bash
+codex "Read agents/agent-agile-master/AGENT.md and agents/agent-agile-master/PERSONA.md, then act as that agent. New sprint, 12 backlog items, don't know which to pick."
+```
+
+### Step 3: Load a skill on demand
+
+```bash
+codex "Read agents/agent-agile-master/AGENT.md, agents/agent-agile-master/PERSONA.md, and agents/agent-agile-master/skills/retrospective/SKILL.md. Act as the agent and run a solo retrospective with me."
+```
+
+### Sample entry prompts
+
+```bash
+# Ritual routing
+codex "Read agents/agent-agile-master/AGENT.md agents/agent-agile-master/PERSONA.md agents/agent-agile-master/skills/ritual-router/SKILL.md — act as the agent. I don't know what to do next. I finished some tasks, I have a backlog."
+
+# Sprint planning
+codex "Read agents/agent-agile-master/AGENT.md agents/agent-agile-master/PERSONA.md agents/agent-agile-master/skills/sprint-planning/SKILL.md — act as the agent. Starting a new sprint."
+```
+
+### Notes
+
+- Run Codex from the repo root so relative file paths resolve correctly.
+- No MCP, no plugins — all skills are plain text files.
+- `extends:` in frontmatter is ignored by Codex (no error, no effect).
+- `AGENTS.md` in the repo root is read automatically — it indexes available agents and skills.
+
+---
+
 ## Option D — GitHub Copilot Chat (VS Code)
 
 No installation needed. GitHub Copilot reads files directly from your workspace
