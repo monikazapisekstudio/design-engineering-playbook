@@ -31,10 +31,15 @@
 | **Awesome Copilot** (github/awesome-copilot) | Folder of `*.md` files in `agents/` or `skills/` subdirectory + frontmatter | ~17k installs via dedicated vsce extension, official Microsoft-backed curation | Low–Medium (format adapt + PR) | MIT (all 3 assets) | P0 (highest ROI) |
 | **VS Code Agent Plugins (Preview)** | `plugin.json` + `agents/` + `skills/` | New, growing, cross-tool (VS Code + Copilot CLI + Claude Code) | High — API still moving, format not stable | MIT (all assets, single license) | P2 (wait for stable API) |
 | **Cursor** | `.cursorrules` + custom prompts/rules | Fast-growing, dev-tool audience | Medium — need to test format | MIT | P1 (dev audience overlap) |
-| **Prompt marketplaces** (PromptHero, FlowGPT, etc.) | Standalone markdown prompts, often behind paywall | Variable, often low quality signal | High — fragmented, often paid, weak attribution discipline | Mixed | P3 (low ROI unless funnel exists) |
-| **Personal site / blog** (monikazapisekstudio/meta-space) | Long-form posts, social posts | Direct audience, brand control | Medium — content production, not platform mechanics | MIT | P1 (companion channel) |
+| **skills.sh** (npx skills add) | Public GitHub repo with SKILL.md files — already installable | Growing, cross-agent (Claude Code, Copilot, Cursor, Codex) | Zero — repo is already public and compatible | MIT | P0 (already live) |
+| **dev.to** | Technical articles, "how I built" posts | Developer + design engineer audience, strong SEO | Medium — content production | MIT | P1 (primary writing channel) |
+| **Medium** | Cross-posted articles from dev.to | 100M monthly readers, discovery engine | Low — cross-post from dev.to, minimal adaptation | MIT | P1 (distribution amplifier) |
+| **X.com** | Thread + link to article | Networking, link distribution | Low — 3-5 tweets per article | MIT | P1 (amplification only, not primary) |
+| **Substack** | Newsletter with own subscriber list | Owned audience, direct relationship | Medium — requires regular cadence (2x/month min) | MIT | P2 (when regular rhythm established) |
+| **Personal site / blog** (monikazapisek.com) | Long-form posts, portfolio, cross-links | Direct audience, brand control | Medium — content production | MIT | P1 (companion channel) |
+| **Prompt marketplaces** (PromptHero, FlowGPT, etc.) | Standalone markdown prompts, often behind paywall | Variable, often low quality signal | High — fragmented, weak attribution discipline | Mixed | P3 (low ROI) |
 
-**Excluded from roadmap (for now):** paid marketplaces without strong attribution discipline; LinkedIn carousel mills (low signal); Substack/Medium cross-posting without primary anchor.
+**Excluded from roadmap:** paid marketplaces without strong attribution discipline; LinkedIn carousel mills (low signal); Anthropic Claude Marketplace (enterprise-only, requires Anthropic contract); Figma Community (wrong format for .md assets).
 
 ---
 
