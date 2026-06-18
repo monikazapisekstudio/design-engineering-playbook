@@ -125,4 +125,4 @@ with the user to gain approval). Both are amplified in long sessions.
 
 ## License
 
-MIT — Author: **Monika Zapisek**. Project: **Design Engineering Playbook**.
+MIT — Author: **[Monika Zapisek](https://monikazapisek.com)**. Project: **Design Engineering Playbook**.

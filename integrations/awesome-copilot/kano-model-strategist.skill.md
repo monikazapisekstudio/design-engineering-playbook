@@ -158,4 +158,4 @@ make it opt-in via settings — the default-on version is a Reverse feature for 
 
 ## License
 
-MIT — see source repository. Author: **Monika Zapisek**. Project: **Design Engineering Playbook**.
+MIT — see source repository. Author: **[Monika Zapisek](https://monikazapisek.com)**. Project: **Design Engineering Playbook**.
