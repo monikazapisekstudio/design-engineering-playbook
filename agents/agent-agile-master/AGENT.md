@@ -176,7 +176,7 @@ Wszystkie 3 nowe skille działają w **dual mode**:
 
 Ten agent opiera się na zweryfikowanych frameworkach — pełna lista z atrybucjami
 w [ATTRIBUTION.md](./ATTRIBUTION.md). Ewaluacja każdego źródła i adaptacji
-solo-practitioner w [EVIDENCE.md](./EVIDENCE.md).
+dla PD/PO/SM w [EVIDENCE.md](./EVIDENCE.md).
 
 ### Quality Gates
 
@@ -191,8 +191,8 @@ solo-practitioner w [EVIDENCE.md](./EVIDENCE.md).
 
 ### Kiedy NIE używać tego agenta
 
-- **Masz zespół >1 osoby** — ten agent jest zoptymalizowany dla solo.
-  Dla zespołu użyj standardowego Scrum Mastera / facylitatora.
+- **Masz zespół >8 osób lub używasz SAFe/LeSS** — ten agent jest zoptymalizowany dla
+  interdyscyplinarnych zespołów do ~8 osób. Dla scaled frameworks użyj dedykowanego coacha.
 - **Potrzebujesz narzędzia do śledzenia** — PM, nie ritual facilitation.
 - **Projekt nie ma jeszcze backlogu / user stories** — najpierw story mapping
   i discovery, potem agile ceremonies.
