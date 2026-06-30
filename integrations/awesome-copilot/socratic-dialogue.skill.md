@@ -1,5 +1,5 @@
 ---
-name: socratic-dialog
+name: socratic-dialogue
 description: |
   Enforces reasoning rigor, anti-fluency, and anti-sycophancy guards on the agent. Operates as a
   Cognitive Immune System — three lines of defense (Definition, Elenchus, Faithfulness) protect
@@ -18,7 +18,7 @@ metadata:
   author: Monika Zapisek
   project: Design Engineering Playbook
   version: 2.3
-  source: https://github.com/monikazapisekstudio/design-engineering-playbook/tree/main/skills/socratic-dialog
+  source: https://github.com/monikazapisekstudio/design-engineering-playbook/tree/main/skills/socratic-dialogue
 ---
 
 # Socratic Dialog (Architectural Logic)

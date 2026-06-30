@@ -13,7 +13,7 @@
 |---|---|---|
 | `agent-agile-master.agent.md` | **PR #1** (highest visibility, demonstrates seriousness) | 🟢 Self-reviewed, ready to open Draft PR |
 | `kano-model-strategist.skill.md` | PR #2 (smaller, builds reviewer trust) | 🔴 Not yet formatted |
-| `socratic-dialog.skill.md` | PR #3 (after Sprint 2 Day 4 — relicense attribution note required) | 🔴 Not yet formatted |
+| `socratic-dialogue.skill.md` | PR #3 (after Sprint 2 Day 4 — relicense attribution note required) | 🔴 Not yet formatted |
 
 ---
 
@@ -85,7 +85,7 @@ mirroring it directly into `agents/agent-agile-master/dist/` because:
 🔴 Pending — schedule for Sprint 1 Day 2 after PR #1 is opened (parallel work OK, but
 submit PR #1 first so reviewer can give feedback on style before we batch).
 
-### `socratic-dialog.skill.md` → PR #3
+### `socratic-dialogue.skill.md` → PR #3
 
 🔴 Pending — schedule for Sprint 2 Day 4. Requires additional attribution note in PR body
 explaining the CC-BY-4.0 → MIT relicense by the sole author (see §1 of strategy-and-roadmap).

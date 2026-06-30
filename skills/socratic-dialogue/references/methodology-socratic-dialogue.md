@@ -7,7 +7,7 @@ status: source-of-truth
 
 # Methodology — Socratic Dialog
 
-This document is the third level of progressive disclosure for the `socratic-dialog` skill. The first level (YAML frontmatter) tells the agent *when* to load. The second level (`SKILL.md`) tells it *what to do*. This file tells it *why each step works and how to handle edge cases*.
+This document is the third level of progressive disclosure for the `socratic-dialogue` skill. The first level (YAML frontmatter) tells the agent *when* to load. The second level (`SKILL.md`) tells it *what to do*. This file tells it *why each step works and how to handle edge cases*.
 
 Read it before applying the skill in non-trivial situations, especially when the workflow feels stuck.
 

@@ -8,5 +8,5 @@
 
 - `awesome-copilot/` — adapted skill files for [github/awesome-copilot](https://github.com/github/awesome-copilot) submission
   - `kano-model-strategist.skill.md`
-  - `socratic-dialog.skill.md`
+  - `socratic-dialogue.skill.md`
   - `legible-agent-output.skill.md` (added 2026-06-30)

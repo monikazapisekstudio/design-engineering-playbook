@@ -1,5 +1,5 @@
 ---
-name: socratic-dialog
+name: socratic-dialogue
 description: |
   Enforces reasoning rigor, anti-fluency, and anti-sycophancy guards on the agent. Operates as a Cognitive Immune System — three lines of defense (Definition, Elenchus, Faithfulness) protect the reasoning chain from unsupported claims, with an autoimmunology checkpoint preventing the agent from attacking its own verified conclusions. Switches the interaction contract from "vending machine" to "seminar" (Question → Justified Reasoning). Use in Context Engineering for Story Map verification, strategic planning, and requirements gathering. Triggers: high-stakes reasoning, imprecise KPIs ("success", "quality"), low model confidence, detected session contradiction, or evidence the model is drifting toward agreement without grounds.
 license: MIT
@@ -15,7 +15,7 @@ metadata:
   created: 2026-03-06
   updated: 2026-06-18
   status: accepted
-  method: references/methodology-socratic-dialog.md
+  method: references/methodology-socratic-dialogue.md
 ---
 
 # Socratic Dialog (Architectural Logic)

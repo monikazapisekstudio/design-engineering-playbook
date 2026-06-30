@@ -49,7 +49,7 @@ exception recorded in §6 of `playbook/distribution/strategy-and-roadmap.md`.
 | NFR-6  | Reliability         | Smoke test in every claimed runtime (Copilot, Claude Code, Codex, VS Code…) — evidence file in `integrations/`.|
 | NFR-7  | Maintainability     | Semver in frontmatter (`version: x.y[.z]`); CHANGELOG entry for every breaking change.                         |
 | NFR-8  | Discoverability     | Root `README.md` skill/agent index updated on add/remove; keywords/tags consistent across frontmatter + README. |
-| NFR-9  | Adversarial safety  | High-stakes skills (Kano pruning, Story Map verification, socratic-dialog) implement anti-fluency + anti-sycophancy guard. |
+| NFR-9  | Adversarial safety  | High-stakes skills (Kano pruning, Story Map verification, socratic-dialogue) implement anti-fluency + anti-sycophancy guard. |
 | NFR-10 | Documentation       | `DOD-CHECKLIST.md` fully ticked before merge; PR description links the checklist + smoke-test evidence.         |
 
 ---

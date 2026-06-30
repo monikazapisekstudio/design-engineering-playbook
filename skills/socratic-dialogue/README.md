@@ -127,15 +127,15 @@ See **[INSTALL.md](./INSTALL.md)** for the full compatibility table (Claude.ai, 
 ## What's inside
 
 ```
-socratic-dialog/
+socratic-dialogue/
 ├── SKILL.md                              ← what the agent loads (workflow, rules, examples)
 ├── INSTALL.md                            ← platform-specific install + compatibility table
 ├── README.md                             ← this file
 └── references/
-    └── methodology-socratic-dialog.md    ← deep reference (Plato, Vlastos, techniques)
+    └── methodology-socratic-dialogue.md    ← deep reference (Plato, Vlastos, techniques)
 ```
 
-`SKILL.md` is the **first** file the agent reads. `methodology-socratic-dialog.md` is loaded **only when the workflow feels stuck** — it contains the philosophical depth, the failure modes, and the operational discipline behind the rules.
+`SKILL.md` is the **first** file the agent reads. `methodology-socratic-dialogue.md` is loaded **only when the workflow feels stuck** — it contains the philosophical depth, the failure modes, and the operational discipline behind the rules.
 
 ---
 

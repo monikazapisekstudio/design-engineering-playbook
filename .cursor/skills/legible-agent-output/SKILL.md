@@ -180,7 +180,7 @@ Six-category taxonomy of failure modes: see `references/jargon-categories.md`.
 - `agent-auditor` (workspace) — audit agent definitions; pair with this skill to audit whether agents emit legible output
 - `prompt-architect` (workspace) — uses this skill implicitly when writing prompts for sub-agents
 - `ecosystem-auditor` (workspace) — periodic sweep to ensure no agent regressed into jargon
-- `socratic-dialog` — for high-stakes decisions where legible framing is not enough; reasoning rigor is also required
+- `socratic-dialogue` — for high-stakes decisions where legible framing is not enough; reasoning rigor is also required
 - `kano-model-strategist` — for deciding which features to build; legible output is about *how* you talk about them, not *which* to build
 
 ## License

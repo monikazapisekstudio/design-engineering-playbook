@@ -104,12 +104,12 @@ Reference files (load when the skill asks for them):
 - `#file:skills/kano-model-strategist/references/experience-rot-checklist.md`
 - `#file:skills/kano-model-strategist/references/ceo-pushback-scripts.md`
 
-### socratic-dialog
+### socratic-dialogue
 
 Reasoning rigor and anti-sycophancy guard. Use for high-stakes decisions and ambiguous requirements.
 
 ```
-#file:skills/socratic-dialog/SKILL.md
+#file:skills/socratic-dialogue/SKILL.md
 Apply socratic rigor to this architecture decision: [decision]
 ```
 

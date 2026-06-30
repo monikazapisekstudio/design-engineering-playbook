@@ -12,14 +12,14 @@
 |---|---|---|---|---|
 | `kano-model-strategist` | Standalone skill | MIT | `skills/kano-model-strategist/` | Production-ready (182 lines, references/, version 1.1, full frontmatter) |
 | `agent-agile-master` | Agent orchestrator + 4 nested skills | MIT | `agents/agent-agile-master/` | Production-ready (AGENT.md, PERSONA.md, EVIDENCE.md, ATTRIBUTION.md, SYNCHRONIZATION.md, 4 skills, full frontmatter) |
-| `socratic-dialog` | Standalone skill (imported) | MIT (relicensed 2026-06-18 from CC-BY-4.0 → MIT) | `skills/socratic-dialog/` | Production-ready (SKILL.md v2.3, 8KB + references/methodology-socratic-dialog.md) |
+| `socratic-dialogue` | Standalone skill (imported) | MIT (relicensed 2026-06-18 from CC-BY-4.0 → MIT) | `skills/socratic-dialogue/` | Production-ready (SKILL.md v2.3, 8KB + references/methodology-socratic-dialogue.md) |
 | `prompts/` | Empty (README only) | — | `prompts/` | Empty |
 | `commands/` | Empty (README only) | — | `commands/` | Empty |
 | `integrations/` | Empty (README only) | — | `integrations/` | Empty |
 
 **Net:** 3 publication-ready assets, **all under MIT**. `prompts/`, `commands/`, `integrations/` are scaffolded but empty — not part of Sprint 0.
 
-> **License decision (recorded 2026-06-18):** All three assets unified under **MIT**. `socratic-dialog` was re-licensed by the sole author (Monika Zapisek) from CC-BY-4.0 to MIT. Earlier copies distributed under CC-BY-4.0 retain that license for prior recipients; new copies and derivative work are MIT.
+> **License decision (recorded 2026-06-18):** All three assets unified under **MIT**. `socratic-dialogue` was re-licensed by the sole author (Monika Zapisek) from CC-BY-4.0 to MIT. Earlier copies distributed under CC-BY-4.0 retain that license for prior recipients; new copies and derivative work are MIT.
 
 ---
 
@@ -106,7 +106,7 @@ metadata:
 **Model + compatibility policy (decided 2026-06-18):**
 
 - **`model:` is always a single string** — `Claude Sonnet 4.5`. awesome-copilot frontmatter schema does not support multi-model lists; do not invent a `model-alternatives` field.
-- **`compatibility:` distinguishes facts from intent** — `Tested with:` lists only models the author has actually run (Claude Sonnet 4.5, GPT-5.5, MiniMax-m3, GitHub Copilot as of 2026-06-18 smoke test); `Designed for:` lists target platforms that are planned for validation in subsequent sprints (Claude Code, Codex, VS Code, OpenCode, plus Claude.ai + Messages API for API-first skills like `socratic-dialog`).
+- **`compatibility:` distinguishes facts from intent** — `Tested with:` lists only models the author has actually run (Claude Sonnet 4.5, GPT-5.5, MiniMax-m3, GitHub Copilot as of 2026-06-18 smoke test); `Designed for:` lists target platforms that are planned for validation in subsequent sprints (Claude Code, Codex, VS Code, OpenCode, plus Claude.ai + Messages API for API-first skills like `socratic-dialogue`).
 - **Do NOT list unavailable Copilot models** (e.g. `MiniMax-m3` is a valid tested-with claim for the Mavis runtime, but is **not** in the GitHub Copilot model picker — never advertise it as a Copilot model).
 - **`GitHub Copilot` is a tested-with claim as of 2026-06-18** — Copilot smoke test (`integrations/copilot-smoke-test.md`) passed for all 3 assets after the GitHub Copilot refactor. The `Designed for:` entry for Copilot was removed from frontmatter in all 3 assets; any future re-introduction must be re-validated.
 
@@ -115,7 +115,7 @@ metadata:
 1. **GitHub** — already public. **No work.**
 2. **Awesome Copilot PR #1** — `agent-agile-master` (highest visibility, demonstrates seriousness)
 3. **Awesome Copilot PR #2** — `kano-model-strategist` skill (smaller, faster PR, builds reviewer trust)
-4. **Awesome Copilot PR #3** — `socratic-dialog` (after import to `skills/`; license is MIT, attribution note in §1 of this doc explains the relicense)
+4. **Awesome Copilot PR #3** — `socratic-dialogue` (after import to `skills/`; license is MIT, attribution note in §1 of this doc explains the relicense)
 5. **Cursor** — package the same 3 assets as `.cursorrules` rules or workspace snippets
 6. **Personal site post** — "Three agents I shipped this quarter" with links back to all of the above
 7. **VS Code Agent Plugins** — wait until plugin.json spec stabilizes (preview churn)
@@ -143,7 +143,7 @@ metadata:
 
 **Day 1:**
 - [x] Decide license for `kano-model-strategist` (MIT, 2026-06-18)
-- [x] Import `socratic-dialog` into `skills/` (Copy-Item, relicensed CC-BY-4.0 → MIT, 2026-06-18)
+- [x] Import `socratic-dialogue` into `skills/` (Copy-Item, relicensed CC-BY-4.0 → MIT, 2026-06-18)
 - [x] Add required frontmatter (`model`, `compatibility`, `metadata.author`) to all 3 assets (2026-06-18)
 - [x] Add LICENSE field decision to README of each asset (LICENSE files updated, AGENT.md/SKILL.md frontmatter complete)
 
@@ -157,7 +157,7 @@ metadata:
 ### Sprint 2 — Full Launch (2 weeks, **the path if Sprint 1 lands well**)
 **Week 1:**
 - [x] Merge Sprint 1 PR / address review feedback (awesome-copilot PR #2051, #2053 open — 2026-06-18)
-- [x] Submit `kano-model-strategist` + `socratic-dialog` as PR #2053 (2026-06-18)
+- [x] Submit `kano-model-strategist` + `socratic-dialogue` as PR #2053 (2026-06-18)
 - [x] Cursor — `.cursor/skills/` + `.cursor/agents/` added to repo (2026-06-18)
 - [ ] **P0 NEXT: artykuł na Medium** — "How I built an agile master agent for product designers" (SoT, potem X.com thread + site thumbnail)
 
@@ -180,7 +180,7 @@ metadata:
 |---|---|---|---|
 | awesome-copilot maintainers reject format | Medium | Medium | Read CONTRIBUTING.md twice; mirror 2 existing successful submissions exactly |
 | License mismatch blocks PR | Low | High | License decision is Day 1 of Sprint 1, not Day 2 |
-| `socratic-dialog` import breaks existing references | Low | Medium | Copy-Item, don't Move; verify SKILL.md loads in both Claude Code and Copilot |
+| `socratic-dialogue` import breaks existing references | Low | Medium | Copy-Item, don't Move; verify SKILL.md loads in both Claude Code and Copilot |
 | Brand confusion (Monika vs Design Engineering Playbook) | Medium | Low | Single rule: byline = person, container = project. Document once, apply everywhere |
 | VS Code Agent Plugin API changes mid-Sprint | High | Low | Defer to Sprint 3; not on critical path |
 | ~~`Designed for: GitHub Copilot` claim without refactor validation~~ (added 2026-06-18, **closed 2026-06-18**) | ~~Medium~~ | ~~High~~ | **Closed:** Copilot refactor + smoke test passed 2026-06-18. GitHub Copilot now in `Tested with:` for all 3 assets (commit `0d2953e feat(integrations): add Copilot support and smoke test results`). Evidence: `integrations/copilot-smoke-test.md`. |
@@ -193,10 +193,10 @@ metadata:
 
 | # | Question | Decision | Date |
 |---|---|---|---|
-| 1 | License for `kano-model-strategist` | **MIT** (matches agent + socratic-dialog after relicense) | 2026-06-18 |
-| 2 | `socratic-dialog` license | **MIT** (relicensed from CC-BY-4.0 by sole author; prior recipients retain CC-BY-4.0 for their copies) | 2026-06-18 |
+| 1 | License for `kano-model-strategist` | **MIT** (matches agent + socratic-dialogue after relicense) | 2026-06-18 |
+| 2 | `socratic-dialogue` license | **MIT** (relicensed from CC-BY-4.0 by sole author; prior recipients retain CC-BY-4.0 for their copies) | 2026-06-18 |
 | 3 | Model in frontmatter | **Claude Sonnet 4.5** (single string, awesome-copilot schema) | 2026-06-18 |
-| 4 | `compatibility:` claim scope | **Tested with** Claude Sonnet 4.5 (Claude Code), GPT-5.5, MiniMax-m3, **GitHub Copilot** (smoke test passed 2026-06-18). **Designed for** Claude Code, Codex, VS Code, OpenCode; `socratic-dialog` additionally Designed for **Claude.ai** + **Messages API** (API-first skill, no runtime required). | 2026-06-18 |
+| 4 | `compatibility:` claim scope | **Tested with** Claude Sonnet 4.5 (Claude Code), GPT-5.5, MiniMax-m3, **GitHub Copilot** (smoke test passed 2026-06-18). **Designed for** Claude Code, Codex, VS Code, OpenCode; `socratic-dialogue` additionally Designed for **Claude.ai** + **Messages API** (API-first skill, no runtime required). | 2026-06-18 |
 
 **Remaining Sprint 1 Day 2 questions (defer, do not block Day 1):**
 
