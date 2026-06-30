@@ -1,7 +1,24 @@
 ---
 name: legible-agent-output
 description: |
-  Force every user-facing string from an AI agent to be readable by a non-technical human without external context. Replaces opaque codes (A127, ENOENT), framework jargon ("cycle 2 dispatch"), raw error strings, and bare percentages with plain-language titles, status messages, and error descriptions. Use this skill when an agent emits task titles, status messages, error messages, action previews, plan summaries, cycle reports, sub-agent delegation prompts, or any user-facing text that may contain internal IDs, framework vocabulary, or technical shorthand. Triggers: "agent said A127", "what does this code mean?", "agent uses cryptic codes", "too much jargon in plan", "task titles are opaque", "agent output is illegible". Do NOT use for backend logging, developer-only output, internal RPC payloads, debug dumps, or system-to-system messages — those are not user-facing and the legibility rules don't apply.
+  Force every user-facing string from an AI agent into plain language a non-technical human can read.
+
+  Your AI agent outputs `T-A127: run ingest` and `hunk:42`. You stare at it wondering what it means. This skill rewrites the agent's output — task titles, status messages, error messages, action previews — in language a non-technical product manager can read.
+triggers:
+  use_when:
+    - agent emits task titles
+    - agent emits status messages
+    - agent emits error messages
+    - agent emits action previews
+    - agent emits plan summaries or cycle reports
+    - agent emits sub-agent delegation prompts
+    - user says "agent said A127" or "what does this code mean?"
+    - user complains "too much jargon in plan" or "task titles are opaque"
+  do_not_use_for:
+    - backend logging (developer-only output)
+    - internal RPC payloads
+    - debug dumps
+    - system-to-system messages
 license: MIT
 model: "Claude Sonnet 4.5"
 compatibility: |

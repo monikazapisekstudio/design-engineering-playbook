@@ -1,7 +1,21 @@
 ---
 name: socratic-dialogue
 description: |
-  Enforces reasoning rigor, anti-fluency, and anti-sycophancy guards on the agent. Operates as a Cognitive Immune System — three lines of defense (Definition, Elenchus, Faithfulness) protect the reasoning chain from unsupported claims, with an autoimmunology checkpoint preventing the agent from attacking its own verified conclusions. Switches the interaction contract from "vending machine" to "seminar" (Question → Justified Reasoning). Use in Context Engineering for Story Map verification, strategic planning, and requirements gathering. Triggers: high-stakes reasoning, imprecise KPIs ("success", "quality"), low model confidence, detected session contradiction, or evidence the model is drifting toward agreement without grounds.
+  Socratic Dialogue is a reasoning skill that replaces the default "vending machine" interaction with a structured seminar model. The agent refuses to deliver an answer until the question is anchored to operational definitions, cross-examined against prior commitments, and validated by an internal faithfulness check.
+
+  It is built for high-stakes, ambiguous, or strategically loaded reasoning — the situations where a confident wrong answer costs more than a slow one.
+triggers:
+  use_when:
+    - high-stakes reasoning (wrong budget, technical, or contractual assumptions are costly)
+    - ambiguity anchoring (terms like "success", "quality", "MVP" lack hard operational definitions)
+    - detected drift (model sliding toward agreement without grounds, sycophancy, hedging)
+    - long sessions where accumulating decisions need explicit integrity check
+    - knowledge co-creation (shared conceptual breakthrough, not just an answer)
+  do_not_use_for:
+    - simple factual lookups
+    - tight-latency tasks
+    - passive users
+    - fully formalized or computational tasks
 license: MIT
 model: Claude Sonnet 4.5
 compatibility: |

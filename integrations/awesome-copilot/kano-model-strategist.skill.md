@@ -1,13 +1,24 @@
 ---
 name: kano-model-strategist
 description: |
-  Classify product features into Kano categories (Must-be / Performance / Attractive / Indifferent / Reverse)
-  and prune the backlog to prevent Experience Rot. Use this skill when the user says "kano", "feature
-  pruning", "should we build this feature", "cut features", "is this a must-have", "is this delight",
-  "ultra-lean backlog review", "MDP vs MVP", "start with NO", or wants to triage a feature list,
-  prioritize a roadmap, audit a spec for scope creep, or push back on a low-value feature. Do NOT
-  use for general project management, Gantt charts, or non-feature design decisions (visual polish,
-  copy editing) — those use a different lens.
+  Classify product features into Kano categories. Cut waste. Build MDP over MVP.
+
+  You have 30 features and 6 weeks. Sort them into Kano's six categories (Must-be, Performance, Attractive, Indifferent, Reverse, Questionable) so you ship the ones that earn their place and cut the rest.
+triggers:
+  use_when:
+    - user says "kano" or "feature pruning" or "cut features"
+    - user says "is this a must-have" or "is this delight" or "should we build this"
+    - user mentions "MDP vs MVP" or "start with NO" or "ultra-lean backlog review"
+    - product backlog triage
+    - MVP-vs-MDP scoping
+    - audit a spec for scope creep
+    - push back on a low-value feature
+  do_not_use_for:
+    - general project management
+    - Gantt charts
+    - scheduling
+    - non-feature design decisions (visual polish, copy editing)
+    - market-access prerequisites (compliance, SOC2)
 license: MIT
 model: "Claude Sonnet 4.5"
 compatibility: |
