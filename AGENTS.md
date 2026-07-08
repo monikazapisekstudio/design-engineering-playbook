@@ -28,3 +28,4 @@ Prefer practical, reusable, senior-level material over generic AI advice.
 - `skills/legible-agent-output/SKILL.md` — Enforce plain-language output from AI agents. Replace opaque codes (A127, ENOENT), framework jargon, raw error strings, and bare percentages with human-readable titles, status messages, and error descriptions. Cross-cutting rule for any agent emitting user-facing strings.
 - `skills/kano-model-strategist/SKILL.md` — Feature prioritization using Kano model. Cut waste, build MDP over MVP.
 - `skills/socratic-dialogue/SKILL.md` — Reasoning rigor and anti-sycophancy guard for high-stakes decisions.
+- `skills/typesetting-engine-skillset/` — six-skill typography/layout family (see `typesetting-engine-skillset/README.md` for the map): `microtypography`, `line-length-optimizer`, `text-typesetting`, `vertical-spacing`, `type-scale-generator`, `glyph-fidelity`.

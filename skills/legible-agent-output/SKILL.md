@@ -1,9 +1,6 @@
 ---
 name: legible-agent-output
-description: |
-  Force every user-facing string from an AI agent into plain language a non-technical human can read.
-
-  Your AI agent outputs `T-A127: run ingest` and `hunk:42`. You stare at it wondering what it means. This skill rewrites the agent's output — task titles, status messages, error messages, action previews — in language a non-technical product manager can read.
+description: Force every user-facing string from an AI agent into plain language a non-technical human can read. Rewrites task titles, status messages, error messages, and action previews, replacing opaque codes and framework jargon with descriptions a non-technical PM can understand.
 triggers:
   use_when:
     - agent emits task titles

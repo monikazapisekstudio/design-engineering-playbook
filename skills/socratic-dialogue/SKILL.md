@@ -1,10 +1,6 @@
 ---
 name: socratic-dialogue
-description: |
-  Socratic Dialogue is a reasoning skill that replaces the default "vending machine" interaction with a structured seminar model. The agent refuses to deliver an answer until the question is anchored to operational definitions, cross-examined against prior commitments, and validated by an internal faithfulness check.
-
-  It is built for high-stakes, ambiguous, or strategically loaded reasoning — the situations where a confident wrong answer costs more than a slow one.
-  Do not apply it as a global conversational style; activation must match one of the explicit `use_when` cases below.
+description: Reasoning rigor and anti-sycophancy guard for high-stakes decisions. Refuses to answer until the question is anchored to operational definitions, cross-examined against prior commitments, and validated by an internal faithfulness check. For high-stakes, ambiguous, or strategically loaded reasoning.
 triggers:
   use_when:
     - the user asks for rigorous reasoning, Socratic questioning, assumption testing, or anti-sycophancy review
