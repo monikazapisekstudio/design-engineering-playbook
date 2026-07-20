@@ -72,7 +72,7 @@ Paste the `references/system-prompt.md` content as System Instructions, then sha
 
 A ready-to-use FigJam Story Map template built to this spec is published on Figma Community:
 
-**[LLM Story Map — AI-readable User Story Map template](https://www.figma.com/community/file/{FIGMA_COMMUNITY_FILE_KEY})**
+**[LLM Story Map — AI-readable User Story Map template](https://www.figma.com/community/file/1661156551667594442)**
 
 Duplicate it, replace `[PRODUCT NAME]` in the AI Readme, fill the backbone with your Activities / Tasks, and the parser reads it out of the box.
 

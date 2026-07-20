@@ -202,7 +202,7 @@ When the guardian flags an issue, it does not silently fix — it reports the is
 - `references/figjam-template-spec.md` — canonical FigJam template spec (colors, typography, sticky syntax, connectors, pre-publish checklist)
 - `references/figjam-executive-summary.md` — human-facing canvas cover page (Executive Summary + ClawHub/GitHub links + Recommended Reading)
 - `scripts/figjam_parser.py` — Python parser (Figma REST API → Markdown / JSON)
-- **Published FigJam template (Figma Community):** [LLM Story Map — AI-readable User Story Map template](https://www.figma.com/community/file/{FIGMA_COMMUNITY_FILE_KEY}) — ready-to-use canvas built to this spec. Duplicate, replace `[PRODUCT NAME]`, fill the backbone, run the parser.
+- **Published FigJam template (Figma Community):** [LLM Story Map — AI-readable User Story Map template](https://www.figma.com/community/file/1661156551667594442) — ready-to-use canvas built to this spec. Duplicate, replace `[PRODUCT NAME]`, fill the backbone, run the parser.
 
 ## Framework Credits
 
