@@ -20,9 +20,9 @@ LLM-readable Markdown / JSON — no manual transcription, no OCR, no loss
 of spatial semantics. The parser reads the board via Figma REST API and
 renders a structured backlog. From there:
 - Obsidian: drop story-map.md into your vault (zero conversion)
-- Notion: Import -> Markdown (creates a page); or paste rows into a DB
+- Notion: Import -> Markdown (creates a page); or push via Notion MCP
 - Cursor / Claude Code / Copilot: paste as context (living spec)
-- Linear / Jira: convert story-map.json to CSV (converter not bundled)
+- Linear / Jira: convert story-map.json to CSV, or push via MCP
 
 --------------------------------------------------
 WHAT MAKES THIS BOARD LLM-READY
@@ -43,8 +43,8 @@ HOW TO USE THIS BOARD
 2. Slice releases: V1 walking skeleton, V2 / V3 hypotheses (clean)
 3. Write stories: [STORY] [V1] [P1] sentence @DEV + Acceptance Criteria
 4. Run the parser (CLI or agent) — get Markdown / JSON backlog
-5. Drop into Obsidian / Notion / coding agent, or convert JSON to CSV
-   for Linear / Jira
+5. Paste into a coding agent, or push to Notion / Linear / Jira
+   via MCP / CSV import
 
 --------------------------------------------------
 GET THE SKILL + PARSER
