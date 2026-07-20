@@ -2,12 +2,12 @@
 created: 2026-07-20
 updated: 2026-07-20
 version: 1.1
-description: Canonical specification for the LLM-ready FigJam Story Map template (Patton methodology). Built and validated on a real product-handoff-lab board.
+description: Canonical specification for the LLM-ready FigJam Story Map template (Patton methodology). Built and validated on a real design-system Story Map board.
 ---
 
 # FigJam Story Map Template — LLM-ready (Patton methodology)
 
-FigJam canvas template compliant with Jeff Patton's User Story Mapping methodology, optimised for error-free reading by LLMs (REST API JSON + Vision). Built and tested on a real `product-handoff-lab` board (Symphonia Score — paid design-system product).
+FigJam canvas template compliant with Jeff Patton's User Story Mapping methodology, optimised for error-free reading by LLMs (REST API JSON + Vision). Built and tested on a real design-system Story Map board.
 
 ## Canvas structure
 
@@ -98,7 +98,7 @@ independent and not affiliated with, endorsed by, or sponsored by Figma, Inc.
 
 ```text
 [STORY] [V1] [P1] User Story sentence @DEV
-AC:
+Acceptance Criteria:
 - Acceptance criterion 1
 - Acceptance criterion 2
 ```
@@ -107,7 +107,7 @@ AC:
 
 ```text
 [STORY] [V2] User Story sentence
-AC:
+Acceptance Criteria:
 - Acceptance criterion 1
 ```
 
@@ -194,7 +194,7 @@ COLOR SEMANTICS:
 TAXONOMY:
 Canonical sticky syntax:
 [STORY] [V1] [P1] User Story sentence @DEV
-AC:
+Acceptance Criteria:
 - Acceptance criterion 1
 - Acceptance criterion 2
 
@@ -221,7 +221,7 @@ CONNECTOR RULES:
 - Pen-tool lines = ignore (vectors without relation semantics)
 
 AC RULES (HARD):
-- AC lives in the same sticky as [STORY], after the "AC:" marker
+- AC lives in the same sticky as [STORY], after the "Acceptance Criteria:" marker
 - Separate AC sticky = anti-pattern (two disconnected JSON objects, agent guesses by x,y)
 - If you see a separate AC sticky, FLAG and propose merge with nearest Story
 
@@ -281,7 +281,7 @@ Before publishing the template as an "LLM-ready FigJam Story Map", verify:
 - [ ] **`[02_SECTION_BACKBONE_User_Tasks]`** contains only `[TASK_*]`, columns have 40–60 px spacing
 - [ ] **`[03_SECTION_Release_1] Core Value Proof`** — `[STORY] [V1]` stickies with `[P1]/[P2]/[P3]`, `@Owner`, AC inline
 - [ ] **`[04_SECTION_Release_2]`** and **`[05_SECTION_Release_3]`** — `[STORY] [V2]/[V3]` stickies clean (zero `[P*]`, zero `@Owner`)
-- [ ] **AC inline** — in the same sticky as `[STORY]`, after `AC:`
+- [ ] **AC inline** — in the same sticky as `[STORY]`, after `Acceptance Criteria:`
 - [ ] **Connectors** only for branching / cross-release dependencies
 - [ ] **Internal text headers** in each section (defense against `Copy as PNG` clipping section labels)
 - [ ] **No FigJam Stamps / Badges** as information carriers (use text prefixes inside the sticky instead)

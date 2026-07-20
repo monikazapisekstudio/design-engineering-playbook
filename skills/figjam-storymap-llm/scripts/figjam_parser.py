@@ -1,21 +1,23 @@
 """
 figjam_parser.py
 ================
-Parser FigJam Story Map (Jeff Patton methodology) → Markdown / JSON.
+FigJam Story Map parser (Jeff Patton methodology) -> Markdown / JSON.
 
-Czyta tablicę FigJam przez Figma REST API, grupuje sticky/shape w sekcje,
-mapuje User Stories do Tasks algorytmicznie po osi X, renderuje ustrukturyzowany
-backlog gotowy do Notion / Linear / Jira lub jako kontekst dla agenta kodującego.
+Reads a FigJam board via the Figma REST API, groups stickies / shapes into
+sections, maps User Stories to Tasks algorithmically by the X axis, and
+renders a structured backlog ready for Notion / Linear / Jira or as context
+for a coding agent (Cursor, Claude Code, Copilot).
 
 Usage:
     python figjam_parser.py --file-key {FILE_KEY} --token $FIGMA_TOKEN > story-map.md
     python figjam_parser.py --file-key {FILE_KEY} --token $FIGMA_TOKEN --format json > story-map.json
+    python figjam_parser.py --input saved-board.json > story-map.md
 
 Requirements:
     pip install requests
 
 License: MIT
-Author: Monika Zapisek (product-handoff-lab)
+Author: Monika Zapisek
 """
 
 from __future__ import annotations
@@ -25,10 +27,21 @@ import json
 import os
 import re
 import sys
+import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
+
+
+# Force UTF-8 stdout / stderr on Windows so emoji and non-ASCII sticky text
+# (e.g. LINE SEPARATOR \u2028 used by FigJam) don't crash cp1252 encoding.
+if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, OSError):
+        pass
 
 
 FIGMA_API_BASE = "https://api.figma.com/v1/files/{file_key}"
@@ -41,18 +54,44 @@ SECTION_BACKBONE_ACTIVITIES = "[01_SECTION_BACKBONE_Activities]"
 SECTION_BACKBONE_TASKS = "[02_SECTION_BACKBONE_User_Tasks]"
 RELEASE_SECTION_PREFIX = "[0"  # [03_..., [04_..., [05_... — releases
 
-# Tagi taksonomii na kartkach
+# Taxonomy tags on stickies
 TAG_STORY = "[STORY]"
 TAG_ACT = "[ACT_"
 TAG_TASK = "[TASK_"
 TAG_RELEASE = re.compile(r"\[V([123])\]")
-TAG_PRIORITY = re.compile(r"\[P([123])\]")
-TAG_OWNER = re.compile(r"@(UX|DEV|PM|BIZ|QA)", re.IGNORECASE)
+# Priority tag may have an emoji prefix inside the brackets: [P1], [💓P1], [💛P2], [💙P3].
+# We match any 1-3 non-`]` characters (the emoji + optional space) before the P[n].
+TAG_PRIORITY = re.compile(r"\[[^\]]{0,6}?P([123])\]")
+TAG_OWNER = re.compile(r"@(UX|DEV|PM|QA)", re.IGNORECASE)
+
+# Emoji ranges to strip from rendered Markdown output (keep parser output plain ASCII text).
+# Covers common symbol ranges used as decorative prefixes on FigJam stickies.
+EMOJI_STRIP = re.compile(
+    "["
+    "\U0001F000-\U0001FAFF"   # symbols & pictographs (hearts, stars, badges, etc.)
+    "\U00002600-\U000027BF"   # misc symbols (✓ ✗ ✦ ✶ ☀ ☁)
+    "\U00002B00-\U00002BFF"   # misc arrows/symbols
+    "\U0001F1E6-\U0001F1FF"   # regional indicators (flags)
+    "\U0000FE00-\U0000FE0F"   # variation selectors (VS15/Vs16 — usually trailing on emoji)
+    "\U0000200B-\U0000200F"   # zero-width spaces (don't render, but pollute output)
+    "\U00002028-\U0000202E"   # LINE SEPARATOR, PARAGRAPH SEPARATOR and friends
+    "]+",
+    flags=re.UNICODE,
+)
+
+# Max distance (px) between a story center-X and the nearest task center-X
+# for the fallback assignment to be considered valid. Above this, the story
+# is flagged as UNASSIGNED instead of being force-mapped.
+X_MAPPING_MAX_DISTANCE_PX = 400
+
+# Retry configuration for Figma API rate limiting (HTTP 429 / 5xx).
+MAX_RETRIES = 3
+RETRY_BACKOFF_SECONDS = 2.0
 
 
 @dataclass
 class StickyItem:
-    """Jedna kartka na kanwie FigJam (STICKY lub SHAPE_WITH_TEXT)."""
+    """A single sticky on the FigJam canvas (STICKY or SHAPE_WITH_TEXT)."""
 
     id: str
     text: str
@@ -63,7 +102,7 @@ class StickyItem:
     color: Optional[str] = None
     section_id: Optional[str] = None
     section_name: Optional[str] = None
-    # Pola wynikowe (po mapowaniu)
+    # Result fields (populated after mapping)
     release: Optional[str] = None
     priority: Optional[str] = None
     owner: Optional[str] = None
@@ -79,13 +118,42 @@ class StickyItem:
 
 @dataclass
 class TaskItem:
-    """[TASK_XX] from the backbone — defines a column on the X axis."""
+    """A [TASK_XX] from the backbone — defines a column on the X axis."""
 
     id: str
     name: str
     x: float
+    y: float
     width: float
+    height: float
     activity_id: Optional[str] = None
+
+    def contains_x(self, x: float) -> bool:
+        return self.x <= x <= self.x + self.width
+
+    def distance_to_center(self, x: float) -> float:
+        center = self.x + self.width / 2
+        return abs(x - center)
+
+    @property
+    def center_x(self) -> float:
+        return self.x + self.width / 2
+
+    @property
+    def center_y(self) -> float:
+        return self.y + self.height / 2
+
+
+@dataclass
+class ActivityItem:
+    """An [ACT_XX] from the backbone — User Activity (major user goal)."""
+
+    id: str
+    name: str
+    x: float
+    y: float
+    width: float
+    height: float
 
     def contains_x(self, x: float) -> bool:
         return self.x <= x <= self.x + self.width
@@ -96,16 +164,8 @@ class TaskItem:
 
 
 @dataclass
-class ActivityItem:
-    """[ACT_XX] from the backbone — User Activity (main user goal)."""
-
-    id: str
-    name: str
-
-
-@dataclass
 class Connector:
-    """Relation between stickies via a native FigJam Connector."""
+    """A relation between stickies via a native FigJam Connector."""
 
     from_id: Optional[str]
     to_id: Optional[str]
@@ -113,16 +173,52 @@ class Connector:
 
 
 def fetch_figjam(file_key: str, token: str) -> Dict[str, Any]:
-    """Fetches the FigJam object tree via the Figma REST API."""
+    """Fetch the FigJam object tree via Figma REST API with retry on 429 / 5xx."""
     url = FIGMA_API_BASE.format(file_key=file_key)
     headers = {"X-Figma-Token": token}
-    response = requests.get(url, headers=headers, timeout=60)
-    response.raise_for_status()
-    return response.json()
+
+    last_err: Optional[requests.HTTPError] = None
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            response = requests.get(url, headers=headers, timeout=60)
+            response.raise_for_status()
+            return response.json()
+        except requests.HTTPError as exc:
+            last_err = exc
+            status = exc.response.status_code if exc.response is not None else 0
+            if status == 404:
+                print(
+                    f"ERROR: Figma file not found (404). Check the --file-key value: {file_key!r}.",
+                    file=sys.stderr,
+                )
+                sys.exit(2)
+            if status == 403:
+                print(
+                    "ERROR: Figma API returned 403. Check that FIGMA_TOKEN is valid and has access to the file.",
+                    file=sys.stderr,
+                )
+                sys.exit(2)
+            if status in (429, 500, 502, 503, 504) and attempt < MAX_RETRIES:
+                wait = RETRY_BACKOFF_SECONDS * (2 ** attempt)
+                print(
+                    f"WARN: Figma API returned {status}. Retrying in {wait:.1f}s (attempt {attempt + 1}/{MAX_RETRIES})...",
+                    file=sys.stderr,
+                )
+                time.sleep(wait)
+                continue
+            raise
+        except requests.RequestException as exc:
+            print(f"ERROR: network error fetching Figma file: {exc}", file=sys.stderr)
+            sys.exit(2)
+
+    # Should not reach here, but keep type-checker happy.
+    if last_err is not None:
+        raise last_err
+    raise RuntimeError("Unreachable: fetch_figjam exited without data or error.")
 
 
 def get_bbox(node: Dict[str, Any]) -> Tuple[float, float, float, float]:
-    """Extracts (x, y, width, height) from absoluteBoundingBox or layout.locationRelativeToParent."""
+    """Extract (x, y, width, height) from absoluteBoundingBox or layout.locationRelativeToParent."""
     bbox = node.get("absoluteBoundingBox") or {}
     if bbox:
         return (
@@ -143,43 +239,82 @@ def get_bbox(node: Dict[str, Any]) -> Tuple[float, float, float, float]:
 
 
 def get_text(node: Dict[str, Any]) -> str:
-    """Extracts text from the `characters` field."""
+    """Extract text from the `characters` field."""
     return (node.get("characters") or "").strip()
 
 
+def _color_to_hex(color: Dict[str, Any]) -> Optional[str]:
+    """Convert a Figma API color dict (r/g/b/a in 0-1 floats) to #RRGGBB hex."""
+    try:
+        r = int(round(float(color.get("r", 0)) * 255))
+        g = int(round(float(color.get("g", 0)) * 255))
+        b = int(round(float(color.get("b", 0)) * 255))
+        return f"#{r:02X}{g:02X}{b:02X}"
+    except (TypeError, ValueError):
+        return None
+
+
 def get_color(node: Dict[str, Any]) -> Optional[str]:
-    """Extracts the first fill colour."""
+    """Extract the first solid fill color as a #RRGGBB hex string, or None."""
     fills = node.get("fills") or []
-    if fills and isinstance(fills, list):
-        first = fills[0]
-        if isinstance(first, str):
-            return first
-        if isinstance(first, dict) and "color" not in first:
+    if not isinstance(fills, list) or not fills:
+        return None
+    first = fills[0]
+    # Figma REST API returns fills as dicts; a string would be a ref (not a color).
+    if not isinstance(first, dict):
+        return None
+    if first.get("type") not in ("SOLID", None):
+        # First fill is an image / gradient; look for a SOLID among remaining fills.
+        for f in fills[1:]:
+            if isinstance(f, dict) and f.get("type") == "SOLID":
+                first = f
+                break
+        else:
             return None
-    return None
+    color = first.get("color")
+    if not isinstance(color, dict):
+        return None
+    return _color_to_hex(color)
 
 
 def is_release_section(name: str) -> bool:
-    """Czy sekcja to Release (V1/V2/V3)?"""
-    return name.startswith("[03_") or name.startswith("[04_") or name.startswith("[05_")
+    """Return True if the section is a Release section (V1/V2/V3 or any later release index)."""
+    # Matches [03_..., [04_..., [05_..., and any higher index like [06_, [07_, ...
+    return bool(re.match(r"^\[\d{2}_SECTION_Release_\d+", name))
 
 
 def parse_release_from_section(name: str) -> Optional[str]:
-    """Parsuje V1/V2/V3 z nazwy sekcji release."""
+    """Parse V1/V2/V3 from a release section name. Falls back to index-based inference."""
     match = re.search(r"\[V([123])\]", name) or re.search(r"Release\s*([123])", name, re.IGNORECASE)
     if match:
         return f"V{match.group(1)}"
-    if name.startswith("[03_"):
-        return "V1"
-    if name.startswith("[04_"):
-        return "V2"
-    if name.startswith("[05_"):
-        return "V3"
+    # Infer from section index: [03_ -> V1, [04_ -> V2, [05_ -> V3.
+    match = re.match(r"^\[(\d{2})_SECTION_Release_(\d+)", name)
+    if match:
+        return f"V{match.group(2)}"
     return None
 
 
+def clean_name(name: str) -> str:
+    """Normalize a sticky / task / activity name: strip emoji, collapse whitespace + newlines.
+
+    FigJam sticky `characters` often contain literal newlines between the tag and the label
+    (e.g. `[TASK_01]\\nTask`), emoji prefixes inside priority brackets (`[💓P1]`), and
+    LINE SEPARATOR / PARAGRAPH SEPARATOR codepoints from rich text. This helper returns a
+    single-line, emoji-free, whitespace-collapsed string for display in Markdown.
+    """
+    if not name:
+        return ""
+    s = EMOJI_STRIP.sub("", name)
+    s = re.sub(r"[\u2028\u2029]+", " ", s)
+    s = re.sub(r"\s*\\n\s*", " ", s)  # literal "\n" if it ever appears as text
+    s = re.sub(r"\s*\n\s*", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
 def parse_story_text(text: str) -> Dict[str, Any]:
-    """Parses a [STORY] sticky's content into its components."""
+    """Parse the body of a [STORY] sticky into components."""
     result: Dict[str, Any] = {
         "release": None,
         "priority": None,
@@ -203,21 +338,31 @@ def parse_story_text(text: str) -> Dict[str, Any]:
     if owner_match:
         result["owner"] = owner_match.group(0).upper()
 
-    # Split into the AC section (after "AC:" or after a double newline)
-    ac_split = re.split(r"\n\s*AC\s*:?\s*\n", text, maxsplit=1)
+    # Split into main body and AC section (after the "Acceptance Criteria:" marker on its own line).
+    ac_split = re.split(r"\n\s*Acceptance\s+Criteria\s*:?\s*\n", text, maxsplit=1, flags=re.IGNORECASE)
     main_part = ac_split[0]
     ac_part = ac_split[1] if len(ac_split) > 1 else ""
 
-    # Remove tags from the main sentence
-    sentence = re.sub(r"\[(STORY|V[123]|P[123])\]", "", main_part)
-    sentence = re.sub(r"@(UX|DEV|PM|BIZ|QA)", "", sentence, flags=re.IGNORECASE)
+    # Strip taxonomy tags, owner markers, and emoji from the main sentence.
+    sentence = re.sub(r"\[[^\]]{0,40}?(STORY|V[123]|P[123])[^\]]{0,40}?\]", "", main_part)
+    sentence = re.sub(r"@(UX|DEV|PM|QA)\b", "", sentence, flags=re.IGNORECASE)
+    sentence = EMOJI_STRIP.sub("", sentence)
+    # Collapse whitespace (including any LINE SEPARATOR / PARAGRAPH SEPARATOR left over).
+    sentence = re.sub(r"[\u2028\u2029]+", " ", sentence)
     sentence = re.sub(r"\s+", " ", sentence).strip()
     result["story_sentence"] = sentence or None
 
     if ac_part:
-        # AC as lines after a dash or newline
-        lines = [ln.strip().lstrip("-").strip() for ln in re.split(r"\n", ac_part) if ln.strip()]
-        result["acceptance_criteria"] = [ln for ln in lines if ln]
+        # AC lines: bullet (-), bullet (*), or plain newline-separated. Strip emoji from each line.
+        lines = []
+        for ln in re.split(r"\n", ac_part):
+            ln = ln.strip().lstrip("-*").strip()
+            ln = EMOJI_STRIP.sub("", ln).strip()
+            ln = re.sub(r"[\u2028\u2029]+", " ", ln)
+            ln = re.sub(r"\s+", " ", ln).strip()
+            if ln:
+                lines.append(ln)
+        result["acceptance_criteria"] = lines
 
     return result
 
@@ -232,7 +377,7 @@ def traverse(
     activities: List[ActivityItem],
     connectors: List[Connector],
 ) -> None:
-    """Recursive traversal of the FigJam node tree."""
+    """Recursively walk the FigJam node tree, collecting sections, stickies, tasks, activities, connectors."""
     node_type = node.get("type")
     node_id = node.get("id", "")
     node_name = node.get("name", "")
@@ -263,25 +408,34 @@ def traverse(
             section_name=current_section_name,
         )
 
-        # Identyfikuj backbone
-        if text.startswith(TAG_TASK) or TAG_TASK in text:
-            t_id = re.search(r"\[TASK_\d+\]", text)
+        # Identify backbone vs story vs other content.
+        is_task = TAG_TASK in text
+        is_act = TAG_ACT in text
+        is_story = TAG_STORY in text
+
+        if is_task:
             tasks.append(
                 TaskItem(
                     id=node_id,
-                    name=text,
+                    name=clean_name(text),
                     x=x,
+                    y=y,
                     width=w,
+                    height=h,
                 )
             )
-        elif text.startswith(TAG_ACT) or TAG_ACT in text:
+        elif is_act:
             activities.append(
                 ActivityItem(
                     id=node_id,
-                    name=text,
+                    name=clean_name(text),
+                    x=x,
+                    y=y,
+                    width=w,
+                    height=h,
                 )
             )
-        elif text.startswith(TAG_STORY) or TAG_STORY in text:
+        elif is_story:
             parsed = parse_story_text(text)
             sticky.release = parsed["release"]
             sticky.priority = parsed["priority"]
@@ -290,7 +444,7 @@ def traverse(
             sticky.acceptance_criteria = parsed["acceptance_criteria"]
             stickies.append(sticky)
         else:
-            # Inne kartki (legenda, persona) — zapisz jako sticky bez parsowania
+            # Other stickies (legend, persona, decorative text) — keep without parsing.
             stickies.append(sticky)
 
     elif node_type == "CONNECTOR":
@@ -305,7 +459,7 @@ def traverse(
             )
         )
 
-    # Rekurencja
+    # Recurse into children.
     for child in node.get("children") or []:
         traverse(
             child,
@@ -320,45 +474,63 @@ def traverse(
 
 
 def map_stories_to_tasks(stickies: List[StickyItem], tasks: List[TaskItem]) -> None:
-    """Mapuje [STORY] do [TASK] algorytmicznie po osi X.
+    """Map each [STORY] to a [TASK] algorithmically by the X axis.
 
-    Algorytm:
-    1. Dla każdej story bierz środek X (center_x).
-    2. Znajdź task, którego range X zawiera center story.
-    3. Fallback: najbliższy środek taska.
+    Algorithm:
+      1. Take the story's center X (x + width / 2).
+      2. Find a task whose X range (task.x .. task.x + task.width) contains that center.
+      3. Fallback: nearest task center on X — but only if within X_MAPPING_MAX_DISTANCE_PX.
+         Otherwise, flag the story as UNASSIGNED (mapped_task_id = None).
     """
     if not tasks:
         return
 
     for sticky in stickies:
-        if not sticky.text.startswith(TAG_STORY) and TAG_STORY not in sticky.text:
+        if TAG_STORY not in sticky.text:
             continue
         cx = sticky.center_x
-        # Range match
-        candidate = None
+
+        # Range match (preferred).
+        candidate: Optional[TaskItem] = None
         for t in tasks:
             if t.contains_x(cx):
                 candidate = t
                 break
-        # Nearest center fallback
+
+        # Nearest-center fallback with distance threshold.
         if candidate is None:
-            candidate = min(tasks, key=lambda t: t.distance_to_center(cx))
-        sticky.mapped_task_id = candidate.id
+            nearest = min(tasks, key=lambda t: t.distance_to_center(cx))
+            if nearest.distance_to_center(cx) <= X_MAPPING_MAX_DISTANCE_PX:
+                candidate = nearest
+            # else: leave mapped_task_id as None -> rendered as UNASSIGNED
+
+        sticky.mapped_task_id = candidate.id if candidate is not None else None
 
 
 def map_tasks_to_activities(tasks: List[TaskItem], activities: List[ActivityItem]) -> None:
-    """Mapuje [TASK] do [ACT] — w prostej wersji: pozycja Y (activity nad task)."""
-    # In the FigJam template: activities sit above tasks in the same X column.
-    # Mapowanie przez overlap X (prosty nearest).
+    """Map each [TASK] to an [ACT] by X-axis overlap (activity sits above its tasks in the same column).
+
+    Algorithm:
+      1. For each task, take center X.
+      2. Find an activity whose X range contains that center.
+      3. Fallback: nearest activity center on X (no threshold — tasks should always have an activity).
+    """
     if not activities:
         return
     for t in tasks:
-        # This can be extended with activity positions — left empty for now
-        t.activity_id = None
+        cx = t.center_x
+        candidate: Optional[ActivityItem] = None
+        for a in activities:
+            if a.contains_x(cx):
+                candidate = a
+                break
+        if candidate is None:
+            candidate = min(activities, key=lambda a: a.distance_to_center(cx))
+        t.activity_id = candidate.id if candidate is not None else None
 
 
 def group_stickies_by_section(stickies: List[StickyItem]) -> Dict[str, List[StickyItem]]:
-    """Grupuje stickies po section_name."""
+    """Group stickies by section_name."""
     groups: Dict[str, List[StickyItem]] = {}
     for s in stickies:
         key = s.section_name or "(unsectioned)"
@@ -373,14 +545,14 @@ def render_markdown(
     activities: List[ActivityItem],
     connectors: List[Connector],
 ) -> str:
-    """Renders structured Markdown with the hierarchy Release → Activity → Task → Story."""
-    out: List[str] = ["# Story Map — parsed backlog\n"]
+    """Render structured Markdown with Release -> Activity -> Task -> Story hierarchy."""
+    out: List[str] = ["# Story Map - parsed backlog\n"]
     out.append("_Source: FigJam, parsed by `figjam-storymap-llm` skill._\n")
 
-    # Sekcja AI Readme (legenda)
+    # AI Readme section (legend)
     readme_items = [s for s in stickies if s.section_name and "00_" in s.section_name]
     if readme_items:
-        out.append("## 00. AI ReadMe (legenda)\n")
+        out.append("## 00. AI ReadMe (legend)\n")
         for s in readme_items:
             if s.text:
                 out.append(f"```\n{s.text}\n```\n")
@@ -394,22 +566,24 @@ def render_markdown(
                 out.append(f"- {s.text}\n")
         out.append("")
 
-    # Backbone — Activities
-    out.append("## 01. Backbone — Activities\n")
+    # Backbone - Activities
+    out.append("## 01. Backbone - Activities\n")
     for a in activities:
-        out.append(f"- **{a.id}** — {a.name}")
+        out.append(f"- **{a.id}** - {a.name}")
     out.append("")
 
-    # Backbone — Tasks
-    out.append("## 02. Backbone — Tasks\n")
+    # Backbone - Tasks
+    out.append("## 02. Backbone - Tasks\n")
     for t in tasks:
-        out.append(f"- **{t.id}** — {t.name} (x={t.x:.0f}, w={t.width:.0f})")
+        activity_name = next((a.name for a in activities if a.id == t.activity_id), None)
+        activity_suffix = f" (activity: {activity_name})" if activity_name else ""
+        out.append(f"- **{t.id}** - {t.name} (x={t.x:.0f}, w={t.width:.0f}){activity_suffix}")
     out.append("")
 
-    # Releases (po kolei V1, V2, V3)
+    # Releases (V1, V2, V3 in order, then any extras)
     releases: Dict[str, List[StickyItem]] = {"V1": [], "V2": [], "V3": []}
     for s in stickies:
-        if not (s.text.startswith(TAG_STORY) or TAG_STORY in s.text):
+        if TAG_STORY not in s.text:
             continue
         if s.release:
             releases.setdefault(s.release, []).append(s)
@@ -419,12 +593,12 @@ def render_markdown(
                 s.release = r
                 releases.setdefault(r, []).append(s)
 
-    for release_key in ["V1", "V2", "V3"]:
+    for release_key in sorted(releases.keys()):
         items = releases.get(release_key, [])
         if not items:
             continue
-        out.append(f"## {release_key} — Release {release_key[1]}\n")
-        # Grupuj po mapped_task_id
+        out.append(f"## {release_key} - Release {release_key[1]}\n")
+        # Group by mapped_task_id.
         by_task: Dict[Optional[str], List[StickyItem]] = {}
         for s in items:
             by_task.setdefault(s.mapped_task_id, []).append(s)
@@ -434,7 +608,7 @@ def render_markdown(
             if task_id:
                 out.append(f"### Task: {task_name or task_id}\n")
             else:
-                out.append(f"### Task: (unassigned — outside any column)\n")
+                out.append(f"### Task: (UNASSIGNED - outside any task column)\n")
             for s in stories:
                 line = f"- [STORY] "
                 if s.release:
@@ -447,7 +621,7 @@ def render_markdown(
                     line += f" {s.owner}"
                 out.append(line)
                 if s.acceptance_criteria:
-                    out.append("  - **AC:**")
+                    out.append("  - **Acceptance Criteria:**")
                     for ac in s.acceptance_criteria:
                         out.append(f"    - {ac}")
             out.append("")
@@ -462,7 +636,7 @@ def render_markdown(
     # Unsectioned warnings
     unsectioned = [s for s in stickies if not s.section_id]
     if unsectioned:
-        out.append("## ⚠ Unsectioned items (poza `[STORY_MAP]` root)\n")
+        out.append("## Warning: Unsectioned items (outside `[STORY_MAP]` root)\n")
         for s in unsectioned:
             out.append(f"- {s.id}: {s.text[:80]}")
         out.append("")
@@ -476,11 +650,22 @@ def render_json(
     activities: List[ActivityItem],
     connectors: List[Connector],
 ) -> str:
-    """Renderuje JSON dla PM toolingu."""
+    """Render JSON for PM tooling import (Notion / Linear / Jira)."""
     payload = {
-        "activities": [{"id": a.id, "name": a.name} for a in activities],
+        "activities": [
+            {"id": a.id, "name": a.name, "x": a.x, "y": a.y, "width": a.width, "height": a.height}
+            for a in activities
+        ],
         "tasks": [
-            {"id": t.id, "name": t.name, "x": t.x, "width": t.width, "activity_id": t.activity_id}
+            {
+                "id": t.id,
+                "name": t.name,
+                "x": t.x,
+                "y": t.y,
+                "width": t.width,
+                "height": t.height,
+                "activity_id": t.activity_id,
+            }
             for t in tasks
         ],
         "stories": [
@@ -496,7 +681,7 @@ def render_json(
                 "raw_text": s.text,
             }
             for s in stickies
-            if s.text.startswith(TAG_STORY) or TAG_STORY in s.text
+            if TAG_STORY in s.text
         ],
         "connectors": [
             {"from": c.from_id, "to": c.to_id, "label": c.label} for c in connectors
@@ -507,13 +692,16 @@ def render_json(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="FigJam Story Map parser → Markdown/JSON (Patton methodology, LLM-ready)."
+        description="FigJam Story Map parser -> Markdown/JSON (Patton methodology, LLM-ready)."
     )
-    parser.add_argument("--file-key", required=True, help="Figma file key z URL: figma.com/board/{key}/...")
+    parser.add_argument(
+        "--file-key",
+        help="Figma file key from the board URL: figma.com/board/{key}/...",
+    )
     parser.add_argument(
         "--token",
         default=os.getenv("FIGMA_TOKEN", ""),
-        help="Figma personal access token (lub env FIGMA_TOKEN).",
+        help="Figma personal access token (or FIGMA_TOKEN env var).",
     )
     parser.add_argument(
         "--format",
@@ -521,23 +709,38 @@ def main() -> int:
         default="markdown",
         help="Output format.",
     )
-    parser.add_argument("--input", help="Optional: path to a saved Figma JSON file (instead of live API).")
+    parser.add_argument(
+        "--input",
+        help="Optional: path to a saved FigJam JSON file (instead of calling the Figma API).",
+    )
 
     args = parser.parse_args()
 
-    if not args.token and not args.input:
-        print("ERROR: brak FIGMA_TOKEN. Ustaw env lub podaj --token.", file=sys.stderr)
-        return 2
-
     if args.input:
-        with open(args.input, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            with open(args.input, "r", encoding="utf-8-sig") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            print(f"ERROR: input file not found: {args.input}", file=sys.stderr)
+            return 2
+        except json.JSONDecodeError as exc:
+            print(f"ERROR: input file is not valid JSON: {exc}", file=sys.stderr)
+            return 2
     else:
+        if not args.file_key:
+            print("ERROR: --file-key is required when --input is not provided.", file=sys.stderr)
+            return 2
+        if not args.token:
+            print(
+                "ERROR: FIGMA_TOKEN is missing. Set the env var or pass --token.",
+                file=sys.stderr,
+            )
+            return 2
         data = fetch_figjam(args.file_key, args.token)
 
-    document = data.get("document") or data  # wsparcie /files i /nodes
+    document = data.get("document") or data
     if "nodes" in data and not document:
-        # /nodes zwraca {nodes: {id: {document: ...}}}
+        # /nodes endpoint returns {nodes: {id: {document: ...}}}
         first_node = next(iter(data["nodes"].values()), {})
         document = first_node.get("document", {})
 

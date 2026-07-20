@@ -44,7 +44,7 @@ Mixing colours and free text = agent hallucinations. The most deterministic meth
 | Element type | `[INSIGHT]`, `[PROBLEM]`, `[IDEA]`, `[RISK]`, `[DECISION]`, `[ACTION]`, `[STORY]`, `[ACT]`, `[TASK]` | `[PROBLEM] Cart does not remember the chosen delivery method.` |
 | Priority | `[P1]`, `[P2]`, `[P3]` or `[MUST]`, `[SHOULD]`, `[COULD]` | `[IDEA] [P1] Fast BLIK checkout.` |
 | State / status | `[OPEN]`, `[IN_REVIEW]`, `[DONE]`, `[BLOCKED]` | `[ACTION] [BLOCKED] Legal review of terms.` |
-| Assignment | `@UX`, `@DEV`, `@PM`, `@BIZ` | `[ACTION] Check GA4 event logs. @DEV` |
+| Assignment | `@UX`, `@DEV`, `@PM`, `@QA` | `[ACTION] Check GA4 event logs. @DEV` |
 | Release | `[V1]`, `[V2]`, `[V3]` | `[STORY] [V1] [P1] ... @DEV` |
 
 ### Why not native FigJam Badges / Stamps?
@@ -138,7 +138,7 @@ Colour in JSON is just HEX. The agent does not know that yellow = risk unless it
 
 ## 11. AC inline (in the same sticky as the Story)
 
-- **Acceptance criteria in the same sticky as `[STORY]`**, below the story sentence, after `AC:`.
+- **Acceptance criteria in the same sticky as `[STORY]`**, below the story sentence, after `Acceptance Criteria:`.
 - A separate sticky next to the Story = two disconnected objects in JSON — the agent must guess the relation by (x, y).
 
 ## 12. Patton dictionary (official terms)

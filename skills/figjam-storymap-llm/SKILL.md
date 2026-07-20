@@ -114,7 +114,7 @@ Check `story-map.md`:
 
 ```
 [STORY] [V1] [P1] User Story sentence @DEV
-AC:
+Acceptance Criteria:
 - Acceptance criterion 1
 - Acceptance criterion 2
 ```
@@ -124,10 +124,10 @@ AC:
 | `[STORY]` | Release section | User Story (release slice) |
 | `[V1]` / `[V2]` / `[V3]` | In story sticky | Release identifier |
 | `[P1]` / `[P2]` / `[P3]` | **V1 only** | Priority (Lean UX: skip in V2/V3) |
-| `@UX` / `@DEV` / `@PM` | **V1 only** | Owner role (Lean UX: skip in V2/V3) |
+| `@UX` / `@DEV` / `@PM` / `@QA` | **V1 only** | Owner role (Lean UX: skip in V2/V3) |
 | `[ACT_*]` | Backbone L1 | User Activity |
 | `[TASK_*]` | Backbone L2 | User Task (Patton term — not "Step") |
-| `AC:` | Inside story sticky | Acceptance criteria inline |
+| `Acceptance Criteria:` | Inside story sticky | Acceptance criteria inline |
 
 ### Why X-axis mapping
 
@@ -193,7 +193,7 @@ When the guardian flags an issue, it does not silently fix — it reports the is
 - **FigJam Stamps / Badges as information carriers.** Separate objects in JSON, not attached to the sticky. Use text prefixes in the sticky content.
 - **Pen-tool lines as relations.** Vectors without `startNodeId` / `endNodeId`. Use native Connectors.
 - **Missing `[STORY_MAP]` root.** Stickies on the bare canvas land in `unsectioned_nodes` and the parser ignores them.
-- **Section names in natural language instead of tags.** `[SEKCJA: WERSJA 1]` vs `[03_SECTION_Release_1]` — the second gives deterministic prefixes for parsing.
+- **Section names in natural language instead of tags.** `[SECTION: RELEASE 1]` vs `[03_SECTION_Release_1]` — the second gives deterministic prefixes for parsing. (Localized names like `[SECCIÓN: VERSIÓN 1]` or `[SEKCJA: WERSJA 1]` are the most common anti-pattern — they break prefix matching and force the agent to guess by Y position.)
 
 ## References
 
