@@ -1,7 +1,7 @@
 ---
 created: 2026-07-20
 updated: 2026-07-20
-version: 1.1
+version: 1.2
 description: Canonical specification for the LLM-ready FigJam Story Map template (Patton methodology). Built and validated on a real design-system Story Map board.
 ---
 
@@ -38,7 +38,7 @@ Created: 2026-07-20
 Last Updated: 2026-07-20
 Version: 1.0
 Licence: MIT
-Skill: github.com/monikazapisekstudio/design-engineering-playbook/tree/main/skills/figjam-storymap-llm
+Skill: github.com/monikazapisek/design-engineering-playbook/tree/main/skills/figjam-storymap-llm
 Get the skill (free, MIT): https://clawhub.ai/monikazapisekstudio/skills/figjam-storymap-llm
 
 If you use this template, credit appreciated:
@@ -153,118 +153,267 @@ Insert at the start of the canvas (ideally `x: 0, y: 0` relative to the root). T
 ==================================================
 SYSTEM INSTRUCTIONS FOR AI AGENT (FIGJAM PARSER)
 ==================================================
-PURPOSE:
-This file contains a Story Map (Jeff Patton methodology) for the product
-[PRODUCT NAME]. Parse it as a living specification, not as a screenshot.
 
-SKILL:
+You are parsing a FigJam Story Map built with Jeff Patton's User Story Mapping
+methodology. This is a living specification, not a screenshot. Treat every sticky
+as a structured record, every section as a container, every connector as a
+semantic relation. Do not guess. Do not invent. Flag what is ambiguous.
+
+--------------------------------------------------
+PURPOSE
+--------------------------------------------------
+This file contains a Story Map for the product [PRODUCT NAME].
+Parse it into a structured backlog (Release -> Activity -> Task -> User Story
+with Acceptance Criteria + Owner) without manual transcription.
+
+--------------------------------------------------
+SKILL (provenance + install)
+--------------------------------------------------
 This FigJam template is part of the figjam-storymap-llm skill by Monika Zapisek.
 The skill audits and parses FigJam User Story Maps into LLM-readable
-Markdown / JSON — eliminates the post-workshop transcription step and feeds
+Markdown / JSON - eliminates the post-workshop transcription step and feeds
 Story Maps to coding agents (Cursor, Claude Code, Copilot) as living spec.
+
 What you get:
 - Python parser (Figma REST API -> Markdown / JSON)
 - Canonical FigJam template spec (this file's structure)
 - Verification prompt for LLM-readiness audits
 - Map Structure Guardian (active coach for Patton + Cohn INVEST rules)
 - Lean UX rules baked in (V1 tagged, V2 / V3 clean)
+
 Get the skill (free, MIT licence):
 https://clawhub.ai/monikazapisekstudio/skills/figjam-storymap-llm
+
 Install:
 - Claude Code / Cursor / Copilot: load the SKILL.md from the link above
-- CLI parser: clone the repo, run scripts/figjam_parser.py --file-key {KEY} --token $FIGMA_TOKEN
-- Audit mode: paste references/system-prompt.md as System Instructions, share board screenshot
+- CLI parser: clone the repo, run
+  scripts/figjam_parser.py --file-key {KEY} --token $FIGMA_TOKEN
+- Audit mode: paste references/system-prompt.md as System Instructions,
+  share board screenshot
 
-CANVAS STRUCTURE:
-- Root: [STORY_MAP] — all stickies must be inside (otherwise unsectioned_nodes in JSON)
-- Sections vertical (Y axis): [TEMPLATE_META] -> [USER_SEGMENT_or_PERSONA] ->
-  [01_BACKBONE_Activities] -> [02_BACKBONE_User_Tasks] ->
-  [03_Release_1] -> [04_Release_2] -> [05_Release_3]
-- Chronology encoded in X axis (Task 01 -> Task 02 -> Task 03)
-- Each [STORY] mapped to [TASK] algorithmically: center_x of story falls
-  into the X range of the task (task.x to task.x + task.width)
+--------------------------------------------------
+CANVAS STRUCTURE
+--------------------------------------------------
+- Root: [STORY_MAP] - ALL stickies must be inside it.
+  Anything outside lands in unsectioned_nodes and the parser ignores it.
+- Sections stacked vertically (Y axis), top to bottom:
+  [00_SECTION_AI_Readme]             <- this instruction block
+  [TEMPLATE_META]                     <- attribution (author, version, licence)
+  [USER_SEGMENT_or_PERSONA]           <- who the map is for
+  [01_SECTION_BACKBONE_Activities]    <- backbone L1: [ACT_*]
+  [02_SECTION_BACKBONE_User_Tasks]    <- backbone L2: [TASK_*]
+  [03_SECTION_Release_1] Core Value Proof   <- V1 (full taxonomy)
+  [04_SECTION_Release_2] Business Goal ...  <- V2 (clean)
+  [05_SECTION_Release_3] Business Goal ...  <- V3 (clean)
+- Chronology is encoded in the X axis (left -> right).
+  [ACT_01] -> [ACT_02] -> ...
+  [TASK_01] -> [TASK_02] -> [TASK_03] (within an activity, left -> right)
+- Every [STORY] is mapped to a [TASK] algorithmically by X position:
+  story_center_x = story.x + story.width / 2
+  find the [TASK] whose range (task.x .. task.x + task.width) contains story_center_x
+  fallback: nearest task center on X (within 400 px); otherwise UNASSIGNED.
+  This means the team can drag stories around freely - the parser tracks the column.
 
-COLOR SEMANTICS:
-- #FFD9E2 = Activity (backbone L1, main user goal)
-- #FFE5D2 = Task (backbone L2, discrete user action, Patton term — NOT "Step")
-- #E6F6C3 = Story V1 (MVP, with [P*] and @Owner)
-- #E5F3FE = Story V2 (Growth, clean)
-- #F3EEFF = Story V3 (Scale / Vision, clean)
+--------------------------------------------------
+COLOR SEMANTICS
+--------------------------------------------------
+#FFD9E2 = Activity  (backbone L1, main user goal)
+#FFE5D2 = Task      (backbone L2, discrete user action - Patton term, NOT "Step")
+#E6F6C3 = Story V1  (MVP / Core Value Proof - full taxonomy: [P*] + @Owner + AC)
+#E5F3FE = Story V2  (Growth - clean)
+#F3EEFF = Story V3  (Scale / Vision - clean)
+#D5C2C5 = Connector (causal relation)
+red     = Connector blocker (A BLOCKS B)
 
-TAXONOMY:
-Canonical sticky syntax:
-[STORY] [V1] [P1] User Story sentence @DEV
-Acceptance Criteria:
-- Acceptance criterion 1
-- Acceptance criterion 2
+Colour is just a HEX in JSON. The agent does not know that yellow = risk unless
+this legend says so. Text prefixes on the sticky are the deterministic carrier.
 
-TAGS:
-[STORY] = User Story (release slice)
-[V1] / [V2] / [V3] = Release identifier
-[P1] / [P2] / [P3] = Priority — V1 ONLY
-@UX / @DEV / @PM / @QA = Owner role — V1 ONLY
-[ACT_*] = User Activity (backbone L1)
-[TASK_*] = User Task (backbone L2 — Patton term, NOT "Step")
+--------------------------------------------------
+TAXONOMY (canonical sticky syntax)
+--------------------------------------------------
+V1 story (full):
+  [STORY] [V1] [P1] User Story sentence @DEV
+  Acceptance Criteria:
+  - Acceptance criterion 1
+  - Acceptance criterion 2
 
-LEAN UX RULES (HARD):
-- V1 (MVP): full taxonomy — [P1]/[P2]/[P3] + @Owner + AC inline
-- V2 / V3: clean — zero [P*], zero @Owner
-- Reason: planning distant hypotheses is Big Upfront Design (Patton + Gothelf)
-- Exception: none — if you find [P*] or @Owner in V2/V3, FLAG as anti-pattern
+V2 / V3 story (clean - no [P*], no @Owner):
+  [STORY] [V2] User Story sentence
+  Acceptance Criteria:
+  - Acceptance criterion 1
 
-CONNECTOR RULES:
-- Arrow A -> B = causal relation (A causes B)
-- Red edge = block (A BLOCKS B)
-- Edge label = relation type (REQUIRES, IF_FAIL, BLOCKS)
-- DO NOT connect linearly (step 1 -> step 2 -> step 3) — chronology is in X + [TASK_*] numbering
-- Use native Connectors only (they have connectorStart / connectorEnd in JSON)
-- Pen-tool lines = ignore (vectors without relation semantics)
+Activity (backbone L1):  [ACT_01] Activity name
+Task    (backbone L2):  [TASK_01] Task name
 
-AC RULES (HARD):
-- AC lives in the same sticky as [STORY], after the "Acceptance Criteria:" marker
-- Separate AC sticky = anti-pattern (two disconnected JSON objects, agent guesses by x,y)
-- If you see a separate AC sticky, FLAG and propose merge with nearest Story
+--------------------------------------------------
+TAGS
+--------------------------------------------------
+[STORY]                = User Story (release slice)
+[V1] / [V2] / [V3]     = Release identifier
+[P1] / [P2] / [P3]     = Priority - V1 ONLY
+@UX / @DEV / @PM / @QA = Owner role - V1 ONLY
+[ACT_*]                = User Activity (backbone L1, major user goal)
+[TASK_*]               = User Task    (backbone L2, step in journey - Patton term, NOT "Step")
+Acceptance Criteria:   = AC section inside the story sticky (NOT a separate sticky)
 
-PARSING METHODS (best to worst):
+--------------------------------------------------
+LEAN UX RULES (HARD)
+--------------------------------------------------
+- V1 (MVP): full taxonomy - [P1]/[P2]/[P3] + @Owner + Acceptance Criteria inline
+- V2 / V3: clean - zero [P*], zero @Owner, zero priority assignment
+- Reason: planning executors / priorities for distant hypotheses is Big Upfront Design
+  (Patton + Gothelf & Seiden, Lean UX). V2 / V3 will change after V1 hits the market.
+- Exception: none. If you find [P*] or @Owner in V2/V3, FLAG as anti-pattern with
+  the sticky node ID and propose removing the tag.
 
-1. GOLD STANDARD — Figma REST API (JSON)
-   URL: https://www.figma.com/developers/api
+--------------------------------------------------
+CONNECTOR RULES
+--------------------------------------------------
+- Arrow A -> B            = causal relation (A causes / enables / requires B)
+- Red edge                = blocker (A BLOCKS B)
+- Edge label              = relation type (REQUIRES, IF_FAIL, BLOCKS)
+- Cross-release connectors are valid and expected:
+  [STORY_X_V2] --[REQUIRES]--> [STORY_Y_V1]
+- DO NOT connect linearly (step 1 -> step 2 -> step 3). Chronology is encoded
+  in X position + [TASK_*] numbering. 100 arrows = spaghetti payload in JSON.
+- Use native FigJam Connectors only (they carry connectorStart / connectorEnd
+  in JSON). Pen-tool lines are vectors without relation semantics - ignore them.
+- FigJam Stamps / Badges are separate objects in JSON, not attached to the
+  sticky. Use text prefixes inside the sticky content, never stamps as
+  information carriers.
+
+--------------------------------------------------
+ACCEPTANCE CRITERIA RULES (HARD)
+--------------------------------------------------
+- AC lives in the SAME sticky as [STORY], below the story sentence,
+  after the "Acceptance Criteria:" marker on its own line.
+- A separate AC sticky next to the Story = anti-pattern. It becomes two
+  disconnected JSON objects and the agent must guess the relation by (x, y).
+- If you see a separate AC sticky, FLAG it and propose merging with the
+  nearest Story. Do not silently merge - report so the team learns the pattern.
+
+--------------------------------------------------
+PARSING METHODS (best to worst)
+--------------------------------------------------
+
+1. GOLD STANDARD - Figma REST API (JSON)
+   URL:      https://www.figma.com/developers/api
    Endpoint: GET /v1/files/{file_key}
-   Auth: header X-Figma-Token
-   How it works: fetches full node tree (SECTION, STICKY, SHAPE_WITH_TEXT, CONNECTOR)
-   Pros: 100% deterministic, zero OCR, zero hallucinations, full metadata (x, y, section, connectorStart/End)
-   Cons: requires a valid FIGMA_TOKEN (Figma personal access token from settings)
+   Auth:     header X-Figma-Token
+   How:      fetches full node tree (SECTION, STICKY, SHAPE_WITH_TEXT, CONNECTOR)
+   Pros:     100% deterministic, zero OCR, zero hallucinations,
+             full metadata (x, y, section, connectorStart/End)
+   Cons:     requires a valid FIGMA_TOKEN (Figma personal access token)
    Use when: production, large boards (>50 stickies), repeated parsing
 
-2. FALLBACK — PNG / screenshot (Vision LLM)
-   How it works: FigJam screenshot -> Claude 3.5 Sonnet / GPT-4o (Vision mode)
-   Pros: quick, no API token needed
+2. FALLBACK - PNG / screenshot (Vision LLM)
+   How:      FigJam screenshot -> Claude / GPT-4o (Vision mode)
+   Pros:     quick, no API token needed
    Cons:
    - OCR errors on >100 stickies (small text)
    - Section names may be clipped by Copy as PNG (label renders on outer frame edge)
-   - No spatial metadata (x, y) — agent loses story->task mapping
+   - No spatial metadata (x, y) - agent loses story -> task mapping
    - Dense layouts confuse the agent
-   Defense: add internal text headers inside each section (do not rely only on frame label)
+   Defense:  add internal text headers inside each section
+             (do not rely only on the frame label)
    Use when: quick audit, small boards (<50 stickies), no API token
 
-3. NOT RECOMMENDED — PDF export
+3. NOT RECOMMENDED - PDF export
    Why NOT:
    - PDF export converts text to vectors / text streams
-   - Spatial dependency extraction (x, y) most error-prone
-   - Section hierarchy often lost (PDF does not preserve FigJam hierarchy)
+   - Spatial dependency extraction (x, y) is most error-prone
+   - Section hierarchy is often lost (PDF does not preserve FigJam hierarchy)
    - Connectors become lines without relation semantics
    Do not use. If you only have PDF, route through Figma REST API (JSON) instead.
 
-OUTPUT EXPECTED:
-Markdown backlog ordered: Release -> Activity -> Task -> User Stories (with AC + Owner)
+--------------------------------------------------
+PARSING PROCEDURE (execute in this order)
+--------------------------------------------------
+1. Locate [STORY_MAP] root SECTION. Anything outside it -> flag UNSECTIONED.
+2. Read [00_SECTION_AI_Readme] (this block) - it is the agent's operating manual.
+3. Read [USER_SEGMENT_or_PERSONA] - the map is meaningless without knowing
+   who the user is. Carry persona context into every story interpretation.
+4. Walk [01_SECTION_BACKBONE_Activities] -> list of [ACT_*].
+5. Walk [02_SECTION_BACKBONE_User_Tasks] -> list of [TASK_*] with x, width.
+6. For each release section [03_..] [04_..] [05_..]:
+   - Identify every [STORY] sticky inside the section.
+   - Parse tags: [V*] -> release, [P*] -> priority (V1 only), @role -> owner (V1 only).
+   - Split the sticky text at "Acceptance Criteria:" on its own line.
+     Body above  -> story sentence (strip tags and @roles).
+     Body below  -> acceptance criteria lines (one per bullet or newline).
+   - Map story -> task by X: story_center_x falls into a task's X range.
+     Fallback: nearest task center within 400 px, else UNASSIGNED.
+   - Map task  -> activity by X overlap (activity sits above its tasks in the same column).
+7. Collect native Connectors. Ignore pen-tool lines. Ignore Stamps / Badges.
+8. Render Markdown grouped by Release -> Activity -> Task -> User Stories
+   (with Acceptance Criteria + Owner).
+9. Run the FLAG audit (see below) and append the report.
 
-FLAG (active coach — do not silently fix, report with node IDs and smallest concrete fix):
-- Build-first voice in [ACT_*] / [TASK_*] ("Build X" instead of "User does X") — Patton anti-pattern
-- V2 / V3 with [P*] or @Owner — Big Upfront Design
-- Separate AC sticky — gets lost in JSON
-- Stickies outside [STORY_MAP] root — unsectioned_nodes, parser will not find them
-- Connector cycles within the same release — suspected duplicate Story or missing dependency
-- Connectors for linear flow — spaghetti payload, chronology is in X + [TASK_*] numbering
+--------------------------------------------------
+OUTPUT EXPECTED
+--------------------------------------------------
+Markdown backlog ordered:
+  Release -> Activity -> Task -> User Stories (with Acceptance Criteria + Owner)
+
+For each [STORY]:
+  - [STORY] [V1] [P1] <story sentence> @DEV
+    - **Acceptance Criteria:**
+      - <criterion 1>
+      - <criterion 2>
+  - mapped to: <TASK name>
+  - section:   <section name>
+
+For each Connector:
+  - <from_id> --[label]--> <to_id>
+
+For each warning:
+  - <node_id>: <issue> -> <smallest concrete fix>
+
+--------------------------------------------------
+FLAG (active coach - do NOT silently fix)
+--------------------------------------------------
+The agent is a Structure Guardian, not a passive reader. When you detect an
+anti-pattern, report it with the sticky node ID and the smallest concrete fix.
+Do not rewrite the sticky in place - report so the team learns the pattern.
+
+Flag when you see:
+- Build-first voice in [ACT_*] / [TASK_*] ("Build X" instead of "User does X")
+  -> Patton anti-pattern. Suggest rewrite in user voice.
+- V2 / V3 with [P*] or @Owner
+  -> Big Upfront Design. Suggest removing the tag.
+- Separate Acceptance Criteria sticky next to a Story
+  -> two disconnected JSON objects. Suggest merging AC into the story sticky
+     after the "Acceptance Criteria:" marker.
+- Stickies outside [STORY_MAP] root
+  -> unsectioned_nodes, parser will not find them. Suggest moving inside root.
+- Connector cycles within the same release
+  -> suspected duplicate Story or missing dependency. Suggest resolving.
+- Connectors for linear flow (step 1 -> step 2 -> step 3)
+  -> spaghetti payload. Chronology is in X + [TASK_*] numbering. Suggest removing.
+- [STORY] missing [V*] tag
+  -> release cannot be inferred from position alone. Suggest adding [V1]/[V2]/[V3].
+- [STORY] with no Acceptance Criteria section
+  -> not testable (Cohn INVEST "T"). Suggest writing at least one AC line.
+- [STORY] in build-first voice ("Implement OAuth" instead of "User signs in with Google")
+  -> story map is user perspective, not builder perspective. Suggest rewrite.
+- Empty [TASK_*] (no story in any release)
+  -> dead experiment or missing discovery. Suggest resolving (cut or populate).
+
+--------------------------------------------------
+WHAT NOT TO DO
+--------------------------------------------------
+- Do not silently fix anti-patterns. Report + propose the smallest concrete change.
+- Do not infer [V*] from Y position alone. The tag on the sticky is the source of truth.
+- Do not assign [P*] or @Owner to V2 / V3 stories "to help the team".
+  Lean UX is explicit: hypotheses stay clean.
+- Do not treat FigJam Stamps / Badges as information carriers.
+  They are separate JSON objects, not attached to the sticky.
+- Do not treat pen-tool lines as connectors.
+  They are vectors without connectorStart / connectorEnd.
+- Do not trust PDF export. Route through Figma REST API instead.
+- Do not split Acceptance Criteria into a separate sticky.
+- Do not number stories with manual IDs like [STORY_01_03].
+  Mapping is algorithmic by X. Manual IDs are waste.
 ==================================================
 ```
 
